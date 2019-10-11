@@ -58,6 +58,29 @@ def plot_sample(x,y,vae):
     plt.show()
 
 
+def save_video_of_model(model, env_name, filename='agent.mp4'):  
+    import skvideo.io
+    from pyvirtualdisplay import Display
+    display = Display(visible=0, size=(40, 30))
+    display.start()
+
+    env = gym.make(env_name)
+    obs = env.reset()
+    shape = env.render(mode='rgb_array').shape[0:2]
+
+    out = skvideo.io.FFmpegWriter(filename)
+
+    done = False
+    while not done: 
+        frame = env.render(mode='rgb_array')
+        out.writeFrame(frame)
+
+        action = model(tf.convert_to_tensor(obs.reshape((1,-1)), tf.float32)).numpy().argmax()
+        obs, reward, done, info = env.step(action)
+    out.close()
+    print("Successfully saved into {}!".format(filename))
+
+
 class LossHistory:
 	def __init__(self, smoothing_factor=0.0):
 		self.alpha = smoothing_factor
